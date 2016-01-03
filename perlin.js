@@ -1,10 +1,12 @@
 var PerlinNoise = function () {
 
-  // Classic Perlin noise in 3D, for comparison
-  this.grad3 = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
-                [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
+ // Gradients
+ this.grad = [[1,1,0],[-1,1,0],[1,-1,0],[-1,-1,0],
+                 [1,0,1],[-1,0,1],[1,0,-1],[-1,0,-1],
                 [0,1,1],[0,-1,1],[0,1,-1],[0,-1,-1]];
 
+  // Permutation of all integers 0-255.
+  // Acts like the seed of the randomizing of gradients.
   this.p = [151,160,137,91,90,15,
             131,13,201,95,96,53,194,233,7,225,140,36,103,30,69,142,8,99,37,240,21,10,23,
             190, 6,148,247,120,234,75,0,26,197,62,94,252,219,203,117,35,11,32,57,177,33,
@@ -26,19 +28,22 @@ var PerlinNoise = function () {
   }
 }
 
+// Calculates the dot product
 PerlinNoise.prototype.dot = function(g, x, y, z) {
   return g[0] * x + g[1] * y + g[2] * z;
 }
 
+// Linear interpolation
 PerlinNoise.prototype.lerp = function(a, b, t) {
   return (1 - t) * a + t * b;
 }
 
+// Uses the improved smoothetep function f(x) = 6x^5 - 15x^4 + 10x^3
 PerlinNoise.prototype.fade = function(t) {
   return t * t * t * (t * (t * 6 - 15) + 10);
 }
 
-// Classic Perlin noise, 3D version
+// 3D Perlin noise
 PerlinNoise.prototype.noise3d = function(x, y, z) {
 
   // Find unit grid cell containing povar
@@ -67,14 +72,14 @@ PerlinNoise.prototype.noise3d = function(x, y, z) {
   var gi111 = this.perm[X+1+this.perm[Y+1+this.perm[Z+1]]] % 12;
 
   // Calculate noise contributions from each of the eight corners
-  var n000 = this.dot(this.grad3[gi000], x, y, z);
-  var n100 = this.dot(this.grad3[gi100], x - 1, y, z);
-  var n010 = this.dot(this.grad3[gi010], x, y - 1, z);
-  var n110 = this.dot(this.grad3[gi110], x-1, y - 1, z);
-  var n001 = this.dot(this.grad3[gi001], x, y, z - 1);
-  var n101 = this.dot(this.grad3[gi101], x-1, y, z - 1);
-  var n011 = this.dot(this.grad3[gi011], x, y-1, z - 1);
-  var n111 = this.dot(this.grad3[gi111], x - 1, y - 1, z - 1);
+  var n000 = this.dot(this.grad[gi000], x, y, z);
+  var n100 = this.dot(this.grad[gi100], x - 1, y, z);
+  var n010 = this.dot(this.grad[gi010], x, y - 1, z);
+  var n110 = this.dot(this.grad[gi110], x-1, y - 1, z);
+  var n001 = this.dot(this.grad[gi001], x, y, z - 1);
+  var n101 = this.dot(this.grad[gi101], x-1, y, z - 1);
+  var n011 = this.dot(this.grad[gi011], x, y-1, z - 1);
+  var n111 = this.dot(this.grad[gi111], x - 1, y - 1, z - 1);
 
   // Compute the this.fade curve value for each of x, y, z
   var u = this.fade(x);
@@ -95,6 +100,7 @@ PerlinNoise.prototype.noise3d = function(x, y, z) {
   return this.lerp(nxy0, nxy1, w);
 }
 
+// Returns noise in 3 dimensions
 PerlinNoise.prototype.noise = function(x, y, z, octaves, persistence) {
     var total = 0;
     var frequency = 1;
